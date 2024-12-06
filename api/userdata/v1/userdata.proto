@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+package api.userdata.v1;
+
+option go_package = "binance_dai_admin/api/userdata/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.userdata.v1";
+
+service Userdata {
+	rpc GetUserOrders (GetUserOrdersRequest) returns (GetUserOrdersReply) {
+		option (google.api.http) = {
+			get: "/api/binance_dai_admin/get_user_orders"
+		};
+	}
+}
+
+message GetUserOrdersRequest {
+	int64 userId = 1;
+}
+message GetUserOrdersReply {
+	int64 orderId = 1;
+}
