@@ -383,7 +383,7 @@ func getIncomeHistory(apiKey, apiSecret string, params *binanceOrderIncomeParams
 		query.Set("symbol", params.Symbol)
 	}
 
-	fmt.Println(startTime, endTime)
+	//fmt.Println(startTime, endTime)
 
 	// 签名
 	query.Set("signature", binanceSign(query.Encode(), apiSecret))
