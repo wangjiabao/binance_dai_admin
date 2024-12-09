@@ -20,6 +20,12 @@ service Userdata {
 			get: "/api/binance_dai_admin/pull_user_incomes"
 		};
 	}
+
+	rpc GetUsersIncome (GetUsersIncomeRequest) returns (GetUsersIncomeReply) {
+		option (google.api.http) = {
+			get: "/api/binance_dai_admin/get_users_income"
+		};
+	}
 }
 
 message GetUserOrdersRequest {
@@ -31,4 +37,20 @@ message GetUserOrdersReply {
 message PullUserIncomeRequest {
 }
 message PullUserIncomeReply {
+}
+
+message GetUsersIncomeRequest {
+	uint64 userId = 1;
+	string plat = 2;
+	uint64 apiStatus = 3;
+}
+message GetUsersIncomeReply {
+	repeated DataList list = 1;
+
+	message DataList {
+		uint64 userId = 1;
+		string symbol = 2;
+		string income = 3;
+		string time = 4;
+	}
 }

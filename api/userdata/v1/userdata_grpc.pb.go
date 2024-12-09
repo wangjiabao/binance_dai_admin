@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Userdata_GetUserOrders_FullMethodName  = "/api.userdata.v1.Userdata/GetUserOrders"
 	Userdata_PullUserIncome_FullMethodName = "/api.userdata.v1.Userdata/PullUserIncome"
+	Userdata_GetUsersIncome_FullMethodName = "/api.userdata.v1.Userdata/GetUsersIncome"
 )
 
 // UserdataClient is the client API for Userdata service.
@@ -29,6 +30,7 @@ const (
 type UserdataClient interface {
 	GetUserOrders(ctx context.Context, in *GetUserOrdersRequest, opts ...grpc.CallOption) (*GetUserOrdersReply, error)
 	PullUserIncome(ctx context.Context, in *PullUserIncomeRequest, opts ...grpc.CallOption) (*PullUserIncomeReply, error)
+	GetUsersIncome(ctx context.Context, in *GetUsersIncomeRequest, opts ...grpc.CallOption) (*GetUsersIncomeReply, error)
 }
 
 type userdataClient struct {
@@ -57,12 +59,22 @@ func (c *userdataClient) PullUserIncome(ctx context.Context, in *PullUserIncomeR
 	return out, nil
 }
 
+func (c *userdataClient) GetUsersIncome(ctx context.Context, in *GetUsersIncomeRequest, opts ...grpc.CallOption) (*GetUsersIncomeReply, error) {
+	out := new(GetUsersIncomeReply)
+	err := c.cc.Invoke(ctx, Userdata_GetUsersIncome_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserdataServer is the server API for Userdata service.
 // All implementations must embed UnimplementedUserdataServer
 // for forward compatibility
 type UserdataServer interface {
 	GetUserOrders(context.Context, *GetUserOrdersRequest) (*GetUserOrdersReply, error)
 	PullUserIncome(context.Context, *PullUserIncomeRequest) (*PullUserIncomeReply, error)
+	GetUsersIncome(context.Context, *GetUsersIncomeRequest) (*GetUsersIncomeReply, error)
 	mustEmbedUnimplementedUserdataServer()
 }
 
@@ -75,6 +87,9 @@ func (UnimplementedUserdataServer) GetUserOrders(context.Context, *GetUserOrders
 }
 func (UnimplementedUserdataServer) PullUserIncome(context.Context, *PullUserIncomeRequest) (*PullUserIncomeReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PullUserIncome not implemented")
+}
+func (UnimplementedUserdataServer) GetUsersIncome(context.Context, *GetUsersIncomeRequest) (*GetUsersIncomeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsersIncome not implemented")
 }
 func (UnimplementedUserdataServer) mustEmbedUnimplementedUserdataServer() {}
 
@@ -125,6 +140,24 @@ func _Userdata_PullUserIncome_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Userdata_GetUsersIncome_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUsersIncomeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserdataServer).GetUsersIncome(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Userdata_GetUsersIncome_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserdataServer).GetUsersIncome(ctx, req.(*GetUsersIncomeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Userdata_ServiceDesc is the grpc.ServiceDesc for Userdata service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +172,10 @@ var Userdata_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PullUserIncome",
 			Handler:    _Userdata_PullUserIncome_Handler,
+		},
+		{
+			MethodName: "GetUsersIncome",
+			Handler:    _Userdata_GetUsersIncome_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

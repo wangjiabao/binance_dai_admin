@@ -28,9 +28,11 @@ type UserdataRepo interface {
 	Save(context.Context, *Userdata) (*Userdata, error)
 	GetUsers(ctx context.Context) ([]*User, error)
 	GetUsersStatusOk(ctx context.Context) ([]*User, error)
+	GetUsersByIds(ctx context.Context, plat string, userIds []uint64, apiStatusOk bool) ([]*User, error)
 	GetUserIncomesBinance(ctx context.Context, userId uint64) ([]*UserIncomeBinance, error)
 	GetUserIncomesBinanceBySymbolAndTraderId(ctx context.Context, userId uint64, symbol string, traderId string) (*UserIncomeBinance, error)
 	GetUserIncomesBinanceOrderIdDesc(ctx context.Context, userId uint64) (*UserIncomeBinance, error)
+	GetUserIncomesBinanceByUserIds(ctx context.Context, userIds []uint64) ([]*UserIncomeBinance, error)
 	InsertUserIncomeBinance(ctx context.Context, userIncome *UserIncomeBinance) error
 }
 
@@ -425,4 +427,56 @@ func getIncomeHistory(apiKey, apiSecret string, params *binanceOrderIncomeParams
 	}
 
 	return incomeResponse, nil
+}
+
+func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersIncomeRequest) (*pb.GetUsersIncomeReply, error) {
+	var (
+		users       []*User
+		userIds     []uint64
+		apiStatusOk bool
+		err         error
+	)
+
+	userIds = make([]uint64, 0)
+	if 0 < req.UserId {
+		userIds = append(userIds, req.UserId)
+	}
+
+	if 1 == req.ApiStatus {
+		apiStatusOk = true
+	}
+	users, err = uc.repo.GetUsersByIds(ctx, req.Plat, userIds, apiStatusOk)
+	if nil != err {
+		return nil, err
+	}
+
+	userIds = make([]uint64, 0)
+	for _, vUser := range users {
+		userIds = append(userIds, vUser.ID)
+	}
+
+	if 0 >= len(userIds) {
+		return nil, nil
+	}
+
+	var (
+		userIncomes []*UserIncomeBinance
+	)
+	userIncomes, err = uc.repo.GetUserIncomesBinanceByUserIds(ctx, userIds)
+	if nil != err {
+		return nil, err
+	}
+
+	res := make([]*pb.GetUsersIncomeReply_DataList, 0)
+
+	for _, v := range userIncomes {
+		res = append(res, &pb.GetUsersIncomeReply_DataList{
+			UserId: v.UserId,
+			Symbol: v.Symbol,
+			Income: v.Income,
+			Time:   time.UnixMilli(int64(v.Time)).Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	return &pb.GetUsersIncomeReply{List: res}, nil
 }

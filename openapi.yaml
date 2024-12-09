@@ -24,6 +24,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/binance_dai_admin/get_users_income:
+        get:
+            tags:
+                - Userdata
+            operationId: Userdata_GetUsersIncome
+            parameters:
+                - name: userId
+                  in: query
+                  schema:
+                    type: string
+                - name: plat
+                  in: query
+                  schema:
+                    type: string
+                - name: apiStatus
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUsersIncomeReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/binance_dai_admin/pull_user_incomes:
         get:
             tags:
@@ -48,6 +79,24 @@ components:
             type: object
             properties:
                 orderId:
+                    type: string
+        GetUsersIncomeReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GetUsersIncomeReply_DataList'
+        GetUsersIncomeReply_DataList:
+            type: object
+            properties:
+                userId:
+                    type: string
+                symbol:
+                    type: string
+                income:
+                    type: string
+                time:
                     type: string
         GoogleProtobufAny:
             type: object

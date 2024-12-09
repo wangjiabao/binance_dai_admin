@@ -126,6 +126,58 @@ func (u *UserdataRepo) GetUsersStatusOk(ctx context.Context) ([]*biz.User, error
 	return res, nil
 }
 
+// GetUsersByIds .
+func (u *UserdataRepo) GetUsersByIds(ctx context.Context, plat string, userIds []uint64, apiStatusOk bool) ([]*biz.User, error) {
+	var users []*User
+	instance := u.data.DB(ctx).Table("new_user")
+
+	if 0 < len(userIds) {
+		instance.Where("id in (?)", userIds)
+	}
+
+	if 0 < len(plat) {
+		instance.Where("plat=?", plat)
+	}
+
+	if apiStatusOk {
+		instance.Where("api_status=?", 1)
+	}
+
+	if err := instance.Find(&users).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, errors.New(500, "FIND_USER_ERROR", err.Error())
+	}
+
+	res := make([]*biz.User, 0)
+	for _, v := range users {
+		res = append(res, &biz.User{
+			ID:                  v.ID,
+			Address:             v.Address,
+			ApiStatus:           v.ApiStatus,
+			ApiKey:              v.ApiKey,
+			ApiSecret:           v.ApiSecret,
+			BindTraderStatus:    v.BindTraderStatus,
+			BindTraderStatusTfi: v.BindTraderStatusTfi,
+			IsDai:               v.Dai,
+			UseNewSystem:        v.UseNewSystem,
+			CreatedAt:           v.CreatedAt,
+			UpdatedAt:           v.UpdatedAt,
+			BinanceId:           v.BinanceId,
+			OkxId:               v.OkxId,
+			NeedInit:            v.NeedInit,
+			Dai:                 v.Dai,
+			Plat:                v.Plat,
+			OkxPass:             v.OkxPass,
+			Num:                 v.Num,
+		})
+	}
+
+	return res, nil
+}
+
 type UserIncomeBinance struct {
 	ID        uint64    `gorm:"primarykey;type:int"`
 	UserId    uint64    `gorm:"type:int;not null"`
@@ -237,4 +289,34 @@ func (u *UserdataRepo) InsertUserIncomeBinance(ctx context.Context, userIncome *
 	}
 
 	return nil
+}
+
+// GetUserIncomesBinanceByUserIds .
+func (u *UserdataRepo) GetUserIncomesBinanceByUserIds(ctx context.Context, userIds []uint64) ([]*biz.UserIncomeBinance, error) {
+	var usersIncomes []*UserIncomeBinance
+	if err := u.data.DB(ctx).Table("user_income_binance").Where("user_id in (?)", userIds).Find(&usersIncomes).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, errors.New(500, "FIND_USER_INCOME_ERROR", err.Error())
+	}
+
+	res := make([]*biz.UserIncomeBinance, 0)
+	for _, v := range usersIncomes {
+		res = append(res, &biz.UserIncomeBinance{
+			ID:        v.ID,
+			UserId:    v.UserId,
+			Symbol:    v.Symbol,
+			Income:    v.Income,
+			Info:      v.Info,
+			TradeId:   v.TradeId,
+			Time:      v.Time,
+			TranId:    v.TranId,
+			CreatedAt: v.CreatedAt,
+			UpdatedAt: v.UpdatedAt,
+		})
+	}
+
+	return res, nil
 }

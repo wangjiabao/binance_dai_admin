@@ -20,10 +20,12 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationUserdataGetUserOrders = "/api.userdata.v1.Userdata/GetUserOrders"
+const OperationUserdataGetUsersIncome = "/api.userdata.v1.Userdata/GetUsersIncome"
 const OperationUserdataPullUserIncome = "/api.userdata.v1.Userdata/PullUserIncome"
 
 type UserdataHTTPServer interface {
 	GetUserOrders(context.Context, *GetUserOrdersRequest) (*GetUserOrdersReply, error)
+	GetUsersIncome(context.Context, *GetUsersIncomeRequest) (*GetUsersIncomeReply, error)
 	PullUserIncome(context.Context, *PullUserIncomeRequest) (*PullUserIncomeReply, error)
 }
 
@@ -31,6 +33,7 @@ func RegisterUserdataHTTPServer(s *http.Server, srv UserdataHTTPServer) {
 	r := s.Route("/")
 	r.GET("/api/binance_dai_admin/get_user_orders", _Userdata_GetUserOrders0_HTTP_Handler(srv))
 	r.GET("/api/binance_dai_admin/pull_user_incomes", _Userdata_PullUserIncome0_HTTP_Handler(srv))
+	r.GET("/api/binance_dai_admin/get_users_income", _Userdata_GetUsersIncome0_HTTP_Handler(srv))
 }
 
 func _Userdata_GetUserOrders0_HTTP_Handler(srv UserdataHTTPServer) func(ctx http.Context) error {
@@ -71,8 +74,28 @@ func _Userdata_PullUserIncome0_HTTP_Handler(srv UserdataHTTPServer) func(ctx htt
 	}
 }
 
+func _Userdata_GetUsersIncome0_HTTP_Handler(srv UserdataHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetUsersIncomeRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserdataGetUsersIncome)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetUsersIncome(ctx, req.(*GetUsersIncomeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetUsersIncomeReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserdataHTTPClient interface {
 	GetUserOrders(ctx context.Context, req *GetUserOrdersRequest, opts ...http.CallOption) (rsp *GetUserOrdersReply, err error)
+	GetUsersIncome(ctx context.Context, req *GetUsersIncomeRequest, opts ...http.CallOption) (rsp *GetUsersIncomeReply, err error)
 	PullUserIncome(ctx context.Context, req *PullUserIncomeRequest, opts ...http.CallOption) (rsp *PullUserIncomeReply, err error)
 }
 
@@ -89,6 +112,19 @@ func (c *UserdataHTTPClientImpl) GetUserOrders(ctx context.Context, in *GetUserO
 	pattern := "/api/binance_dai_admin/get_user_orders"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserdataGetUserOrders))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *UserdataHTTPClientImpl) GetUsersIncome(ctx context.Context, in *GetUsersIncomeRequest, opts ...http.CallOption) (*GetUsersIncomeReply, error) {
+	var out GetUsersIncomeReply
+	pattern := "/api/binance_dai_admin/get_users_income"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserdataGetUsersIncome))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
