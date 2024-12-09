@@ -88,6 +88,44 @@ func (u *UserdataRepo) GetUsers(ctx context.Context) ([]*biz.User, error) {
 	return res, nil
 }
 
+// GetUsersStatusOk .
+func (u *UserdataRepo) GetUsersStatusOk(ctx context.Context) ([]*biz.User, error) {
+	var users []*User
+	if err := u.data.DB(ctx).Table("new_user").Where("api_status=?", 1).Find(&users).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, errors.New(500, "FIND_USER_ERROR", err.Error())
+	}
+
+	res := make([]*biz.User, 0)
+	for _, v := range users {
+		res = append(res, &biz.User{
+			ID:                  v.ID,
+			Address:             v.Address,
+			ApiStatus:           v.ApiStatus,
+			ApiKey:              v.ApiKey,
+			ApiSecret:           v.ApiSecret,
+			BindTraderStatus:    v.BindTraderStatus,
+			BindTraderStatusTfi: v.BindTraderStatusTfi,
+			IsDai:               v.Dai,
+			UseNewSystem:        v.UseNewSystem,
+			CreatedAt:           v.CreatedAt,
+			UpdatedAt:           v.UpdatedAt,
+			BinanceId:           v.BinanceId,
+			OkxId:               v.OkxId,
+			NeedInit:            v.NeedInit,
+			Dai:                 v.Dai,
+			Plat:                v.Plat,
+			OkxPass:             v.OkxPass,
+			Num:                 v.Num,
+		})
+	}
+
+	return res, nil
+}
+
 type UserIncomeBinance struct {
 	ID        uint64    `gorm:"primarykey;type:int"`
 	UserId    uint64    `gorm:"type:int;not null"`

@@ -27,6 +27,7 @@ type Userdata struct {
 type UserdataRepo interface {
 	Save(context.Context, *Userdata) (*Userdata, error)
 	GetUsers(ctx context.Context) ([]*User, error)
+	GetUsersStatusOk(ctx context.Context) ([]*User, error)
 	GetUserIncomesBinance(ctx context.Context, userId uint64) ([]*UserIncomeBinance, error)
 	GetUserIncomesBinanceBySymbolAndTraderId(ctx context.Context, userId uint64, symbol string, traderId string) (*UserIncomeBinance, error)
 	GetUserIncomesBinanceOrderIdDesc(ctx context.Context, userId uint64) (*UserIncomeBinance, error)
@@ -253,7 +254,7 @@ func (uc *UserdataUsecase) PullUserIncome(ctx context.Context, req *pb.PullUserI
 		symbols []string
 		users   []*User
 	)
-	users, err = uc.repo.GetUsers(ctx)
+	users, err = uc.repo.GetUsersStatusOk(ctx)
 	if nil != err {
 		return nil, err
 	}
@@ -261,10 +262,6 @@ func (uc *UserdataUsecase) PullUserIncome(ctx context.Context, req *pb.PullUserI
 	symbols = make([]string, 0)
 	symbols = append(symbols, "ETHUSDT")
 	for _, vUser := range users {
-		if 1 != vUser.ApiStatus { // 结束了
-			continue
-		}
-
 		if "binance" == vUser.Plat {
 			for _, vSymbol := range symbols {
 				uc.pullUserIncomeBinance(ctx, vUser.ID, vUser.CreatedAt, vSymbol, vUser.ApiKey, vUser.ApiSecret)
