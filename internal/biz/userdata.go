@@ -451,8 +451,10 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 	}
 
 	userIds = make([]uint64, 0)
+	usersMap := make(map[uint64]*User, 0)
 	for _, vUser := range users {
 		userIds = append(userIds, vUser.ID)
+		usersMap[vUser.ID] = vUser
 	}
 
 	if 0 >= len(userIds) {
@@ -470,7 +472,12 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 	res := make([]*pb.GetUsersIncomeReply_DataList, 0)
 
 	for _, v := range userIncomes {
+		if _, ok := usersMap[v.UserId]; !ok {
+			continue
+		}
+
 		res = append(res, &pb.GetUsersIncomeReply_DataList{
+			Name:   usersMap[v.UserId].Address,
 			UserId: v.UserId,
 			Symbol: v.Symbol,
 			Income: v.Income,

@@ -48,6 +48,7 @@ message GetUsersIncomeReply {
 	repeated DataList list = 1;
 
 	message DataList {
+		string name = 5;
 		uint64 userId = 1;
 		string symbol = 2;
 		string income = 3;

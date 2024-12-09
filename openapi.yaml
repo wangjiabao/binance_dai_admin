@@ -90,6 +90,8 @@ components:
         GetUsersIncomeReply_DataList:
             type: object
             properties:
+                name:
+                    type: string
                 userId:
                     type: string
                 symbol:
