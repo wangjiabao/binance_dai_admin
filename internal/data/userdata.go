@@ -143,7 +143,7 @@ func (u *UserdataRepo) GetUsersByIds(ctx context.Context, plat string, userIds [
 		instance.Where("api_status=?", 1)
 	}
 
-	if err := instance.Find(&users).Error; err != nil {
+	if err := instance.Order("id desc").Find(&users).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

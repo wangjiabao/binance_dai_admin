@@ -474,7 +474,7 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 			UserId: v.UserId,
 			Symbol: v.Symbol,
 			Income: v.Income,
-			Time:   time.UnixMilli(int64(v.Time)).Format("2006-01-02 15:04:05"),
+			Time:   time.UnixMilli(int64(v.Time)).Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 		})
 	}
 
