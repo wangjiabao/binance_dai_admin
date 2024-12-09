@@ -14,11 +14,21 @@ service Userdata {
 			get: "/api/binance_dai_admin/get_user_orders"
 		};
 	}
+
+	rpc PullUserIncome (PullUserIncomeRequest) returns (PullUserIncomeReply) {
+		option (google.api.http) = {
+			get: "/api/binance_dai_admin/pull_user_incomes"
+		};
+	}
 }
 
 message GetUserOrdersRequest {
-	int64 userId = 1;
 }
 message GetUserOrdersReply {
 	int64 orderId = 1;
+}
+
+message PullUserIncomeRequest {
+}
+message PullUserIncomeReply {
 }

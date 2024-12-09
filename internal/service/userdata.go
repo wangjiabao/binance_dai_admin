@@ -21,3 +21,7 @@ func NewUserdataService(uc *biz.UserdataUsecase) *UserdataService {
 func (s *UserdataService) GetUserOrders(ctx context.Context, req *pb.GetUserOrdersRequest) (*pb.GetUserOrdersReply, error) {
 	return s.uc.GetUserOrders(ctx, req)
 }
+
+func (s *UserdataService) PullUserIncome(ctx context.Context, req *pb.PullUserIncomeRequest) (*pb.PullUserIncomeReply, error) {
+	return s.uc.PullUserIncome(ctx, req)
+}

@@ -11,11 +11,6 @@ paths:
             tags:
                 - Userdata
             operationId: Userdata_GetUserOrders
-            parameters:
-                - name: userId
-                  in: query
-                  schema:
-                    type: string
             responses:
                 "200":
                     description: OK
@@ -23,6 +18,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/GetUserOrdersReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/binance_dai_admin/pull_user_incomes:
+        get:
+            tags:
+                - Userdata
+            operationId: Userdata_PullUserIncome
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PullUserIncomeReply'
                 default:
                     description: Default error response
                     content:
@@ -44,6 +57,9 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        PullUserIncomeReply:
+            type: object
+            properties: {}
         Status:
             type: object
             properties:

@@ -4,7 +4,6 @@ import (
 	"binance_dai_admin/internal/biz"
 	"binance_dai_admin/internal/conf"
 	"context"
-	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -18,25 +17,23 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewDB, NewTransaction, NewRedis, NewUserdataRepo)
+var ProviderSet = wire.NewSet(NewData, NewDB, NewTransaction, NewUserdataRepo)
 
 // Data .
 type Data struct {
-	db  *gorm.DB
-	rdb *redis.Client
+	db *gorm.DB
 }
 
 // 用来承载事务的上下文
 type contextTxKey struct{}
 
 // NewData .
-func NewData(c *conf.Data, logger log.Logger, db *gorm.DB, rdb *redis.Client) (*Data, func(), error) {
+func NewData(c *conf.Data, logger log.Logger, db *gorm.DB) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
-		db:  db,
-		rdb: rdb,
+		db: db,
 	}, cleanup, nil
 }
 
@@ -64,7 +61,7 @@ func (d *Data) DB(ctx context.Context) *gorm.DB {
 
 // NewDB .
 func NewDB(c *conf.Data) *gorm.DB {
-	f, err := os.OpenFile("./log/sql.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	f, err := os.OpenFile("../../log/sql.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Errorf("failed opening sql.log", err)
 		panic("failed opening sql.log")
@@ -83,7 +80,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(c.Database.Source), &gorm.Config{
 		Logger:                                   newLogger,
 		DisableForeignKeyConstraintWhenMigrating: true,
-		NamingStrategy: schema.NamingStrategy{
+		NamingStrategy:                           schema.NamingStrategy{
 			//SingularTable: true, // 表名是否加 s
 		},
 	})
@@ -94,24 +91,6 @@ func NewDB(c *conf.Data) *gorm.DB {
 	}
 
 	return db
-}
-
-func NewRedis(c *conf.Data) *redis.Client {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:         c.Redis.Addr,
-		DialTimeout:  time.Second * 2,
-		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
-		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
-	})
-
-	timeout, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancelFunc()
-	err := rdb.Ping(timeout).Err()
-	if err != nil {
-		log.Fatalf("redis connect error: %v", err)
-	}
-
-	return rdb
 }
 
 // Paginate 分页
