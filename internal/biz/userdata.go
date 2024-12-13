@@ -369,7 +369,7 @@ func getIncomeHistory(apiKey, apiSecret string, params *binanceOrderIncomeParams
 
 	// 获取最近10分钟的
 	endTime := strconv.FormatInt(params.Timestamp, 10)
-	startTime := strconv.FormatInt(time.Now().Add(-14*24*time.Hour).UnixMilli(), 10)
+	startTime := strconv.FormatInt(time.Now().Add(-7*24*time.Hour).UnixMilli(), 10)
 
 	// 构造查询字符串
 	query := url.Values{}
