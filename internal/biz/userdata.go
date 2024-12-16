@@ -447,9 +447,53 @@ func (uc *UserdataUsecase) pullUserIncomeGate(ctx context.Context, userId uint64
 		return
 	}
 
-	fmt.Println(len(res))
+	if 0 >= len(res) {
+		return
+	}
+	var (
+		income *UserIncomeBinance
+		insert []*UserIncomeBinance
+	)
+	income, err = uc.repo.GetUserIncomesBinanceOrderIdDesc(ctx, userId)
+	if nil != err {
+		fmt.Println("binance，查询数据库错误：", err)
+		return
+	}
+
+	insert = make([]*UserIncomeBinance, 0)
+
 	for _, v := range res {
-		fmt.Println(v)
+		if v.FirstOpenTime <= timeC.Unix() {
+			continue
+		}
+
+		if "api" != v.Text {
+			continue
+		}
+
+		// 相同的一条
+		if v.Pnl == income.Income && income.TradeId == strconv.FormatInt(v.FirstOpenTime, 10) {
+			break
+		}
+
+		insert = append(insert, &UserIncomeBinance{
+			UserId:  userId,
+			Symbol:  v.Contract,
+			Income:  v.Pnl,
+			Info:    "gate",
+			TradeId: strconv.FormatInt(v.FirstOpenTime, 10),
+			Time:    uint64(v.Time),
+			TranId:  "",
+		})
+	}
+
+	if 0 < len(insert) {
+		for i := len(insert) - 1; i >= 0; i-- {
+			err = uc.repo.InsertUserIncomeBinance(ctx, insert[i])
+			if nil != err {
+				fmt.Println("binance，插入数据库失败：", err, insert[i])
+			}
+		}
 	}
 
 	return
