@@ -265,11 +265,14 @@ func (uc *UserdataUsecase) PullUserIncome(ctx context.Context, req *pb.PullUserI
 
 	symbols = make([]string, 0)
 	symbols = append(symbols, "ETHUSDT")
+
 	for _, vUser := range users {
 		if "binance" == vUser.Plat {
 			for _, vSymbol := range symbols {
 				uc.pullUserIncomeBinance(ctx, vUser.ID, vUser.CreatedAt, vSymbol, vUser.ApiKey, vUser.ApiSecret)
 			}
+		} else if "gate" == vUser.Plat {
+			uc.pullUserIncomeGate(ctx, vUser.ID, vUser.CreatedAt, "ETH_USDT", vUser.ApiKey, vUser.ApiSecret)
 		}
 	}
 
@@ -438,9 +441,9 @@ func (uc *UserdataUsecase) pullUserIncomeGate(ctx context.Context, userId uint64
 		err error
 	)
 
-	res, err = getGateContract(apiKey, apiSecret, "ETH_USDT")
+	res, err = getGateContract(apiKey, apiSecret, symbol)
 	if nil != err {
-		fmt.Println(err, "获取gate信息失败", apiSecret, apiKey)
+		fmt.Println(err, "获取gate信息失败", userId)
 		return
 	}
 
