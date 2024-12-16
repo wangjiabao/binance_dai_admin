@@ -8,6 +8,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/antihax/optional"
+	"github.com/gateio/gateapi-go/v6"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -427,6 +429,54 @@ func getIncomeHistory(apiKey, apiSecret string, params *binanceOrderIncomeParams
 	}
 
 	return incomeResponse, nil
+}
+
+func (uc *UserdataUsecase) pullUserIncomeGate(ctx context.Context, userId uint64, timeC time.Time, symbol, apiKey, apiSecret string) {
+
+	var (
+		res []gateapi.PositionClose
+		err error
+	)
+
+	res, err = getGateContract(apiKey, apiSecret, "ETH_USDT")
+	if nil != err {
+		fmt.Println(err, "获取gate信息失败", apiSecret, apiKey)
+		return
+	}
+
+	fmt.Println(len(res))
+	for _, v := range res {
+		fmt.Println(v)
+	}
+
+	return
+}
+
+// getGateContract
+func getGateContract(apiK, apiS string, symbol string) ([]gateapi.PositionClose, error) {
+	client := gateapi.NewAPIClient(gateapi.NewConfiguration())
+	// uncomment the next line if your are testing against testnet
+	// client.ChangeBasePath("https://fx-api-testnet.gateio.ws/api/v4")
+	ctx := context.WithValue(context.Background(),
+		gateapi.ContextGateAPIV4,
+		gateapi.GateAPIV4{
+			Key:    apiK,
+			Secret: apiS,
+		},
+	)
+
+	result, _, err := client.FuturesApi.ListPositionClose(ctx, "usdt", &gateapi.ListPositionCloseOpts{
+		Contract: optional.NewString(symbol),
+	})
+	if err != nil {
+		if e, ok := err.(gateapi.GateAPIError); ok {
+			fmt.Println("gate api error: ", e.Error())
+		} else {
+			fmt.Println("generic error: ", err.Error())
+		}
+	}
+
+	return result, nil
 }
 
 func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersIncomeRequest) (*pb.GetUsersIncomeReply, error) {
