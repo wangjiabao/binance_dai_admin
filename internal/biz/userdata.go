@@ -575,12 +575,18 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 			continue
 		}
 
+		tmpTime := ""
+		if "gate" == v.Info {
+			tmpTime = time.Unix(int64(v.Time), 0).Add(8 * time.Hour).Format("2006-01-02 15:04:05")
+		} else {
+			tmpTime = time.UnixMilli(int64(v.Time)).Add(8 * time.Hour).Format("2006-01-02 15:04:05")
+		}
 		res = append(res, &pb.GetUsersIncomeReply_DataList{
 			Name:   usersMap[v.UserId].Address,
 			UserId: v.UserId,
 			Symbol: v.Symbol,
 			Income: v.Income,
-			Time:   time.UnixMilli(int64(v.Time)).Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+			Time:   tmpTime,
 		})
 	}
 
