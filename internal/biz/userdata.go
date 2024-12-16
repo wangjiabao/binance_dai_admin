@@ -472,8 +472,10 @@ func (uc *UserdataUsecase) pullUserIncomeGate(ctx context.Context, userId uint64
 		}
 
 		// 相同的一条
-		if v.Pnl == income.Income && income.TradeId == strconv.FormatInt(v.FirstOpenTime, 10) {
-			break
+		if nil != income {
+			if v.Pnl == income.Income && income.TradeId == strconv.FormatInt(v.FirstOpenTime, 10) {
+				break
+			}
 		}
 
 		insert = append(insert, &UserIncomeBinance{
