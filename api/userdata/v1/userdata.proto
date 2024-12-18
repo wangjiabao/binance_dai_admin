@@ -33,9 +33,21 @@ service Userdata {
 		};
 	}
 
+	rpc UpdateUserNum (UpdateUserNumRequest) returns (UpdateUserNumReply) {
+		option (google.api.http) = {
+			get: "/api/binance_dai_admin/update_user_num"
+		};
+	}
+
 	rpc GetNum (GetNumRequest) returns (GetNumReply) {
 		option (google.api.http) = {
 			get: "/api/binance_dai_admin/get_num"
+		};
+	}
+
+	rpc UpdateNum (UpdateNumRequest) returns (UpdateNumReply) {
+		option (google.api.http) = {
+			get: "/api/binance_dai_admin/update_num"
 		};
 	}
 }
@@ -81,6 +93,14 @@ message GetUsersIncomeReply {
 	}
 }
 
+message UpdateUserNumRequest {
+	uint64 userId = 1;
+	double num = 2;
+}
+
+message UpdateUserNumReply {
+}
+
 message GetNumRequest {
 }
 
@@ -91,4 +111,12 @@ message GetNumReply {
 		string apiKey = 1;
 		double num = 2;
 	}
+}
+
+message UpdateNumRequest {
+	string apiKey = 1;
+	double num = 2;
+}
+
+message UpdateNumReply {
 }

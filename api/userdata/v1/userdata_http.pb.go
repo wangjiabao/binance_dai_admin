@@ -24,6 +24,8 @@ const OperationUserdataGetUserOrders = "/api.userdata.v1.Userdata/GetUserOrders"
 const OperationUserdataGetUsers = "/api.userdata.v1.Userdata/GetUsers"
 const OperationUserdataGetUsersIncome = "/api.userdata.v1.Userdata/GetUsersIncome"
 const OperationUserdataPullUserIncome = "/api.userdata.v1.Userdata/PullUserIncome"
+const OperationUserdataUpdateNum = "/api.userdata.v1.Userdata/UpdateNum"
+const OperationUserdataUpdateUserNum = "/api.userdata.v1.Userdata/UpdateUserNum"
 
 type UserdataHTTPServer interface {
 	GetNum(context.Context, *GetNumRequest) (*GetNumReply, error)
@@ -31,6 +33,8 @@ type UserdataHTTPServer interface {
 	GetUsers(context.Context, *GetUsersRequest) (*GetUsersReply, error)
 	GetUsersIncome(context.Context, *GetUsersIncomeRequest) (*GetUsersIncomeReply, error)
 	PullUserIncome(context.Context, *PullUserIncomeRequest) (*PullUserIncomeReply, error)
+	UpdateNum(context.Context, *UpdateNumRequest) (*UpdateNumReply, error)
+	UpdateUserNum(context.Context, *UpdateUserNumRequest) (*UpdateUserNumReply, error)
 }
 
 func RegisterUserdataHTTPServer(s *http.Server, srv UserdataHTTPServer) {
@@ -39,7 +43,9 @@ func RegisterUserdataHTTPServer(s *http.Server, srv UserdataHTTPServer) {
 	r.GET("/api/binance_dai_admin/pull_user_incomes", _Userdata_PullUserIncome0_HTTP_Handler(srv))
 	r.GET("/api/binance_dai_admin/get_users", _Userdata_GetUsers0_HTTP_Handler(srv))
 	r.GET("/api/binance_dai_admin/get_users_income", _Userdata_GetUsersIncome0_HTTP_Handler(srv))
+	r.GET("/api/binance_dai_admin/update_user_num", _Userdata_UpdateUserNum0_HTTP_Handler(srv))
 	r.GET("/api/binance_dai_admin/get_num", _Userdata_GetNum0_HTTP_Handler(srv))
+	r.GET("/api/binance_dai_admin/update_num", _Userdata_UpdateNum0_HTTP_Handler(srv))
 }
 
 func _Userdata_GetUserOrders0_HTTP_Handler(srv UserdataHTTPServer) func(ctx http.Context) error {
@@ -118,6 +124,25 @@ func _Userdata_GetUsersIncome0_HTTP_Handler(srv UserdataHTTPServer) func(ctx htt
 	}
 }
 
+func _Userdata_UpdateUserNum0_HTTP_Handler(srv UserdataHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateUserNumRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserdataUpdateUserNum)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateUserNum(ctx, req.(*UpdateUserNumRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateUserNumReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _Userdata_GetNum0_HTTP_Handler(srv UserdataHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GetNumRequest
@@ -137,12 +162,33 @@ func _Userdata_GetNum0_HTTP_Handler(srv UserdataHTTPServer) func(ctx http.Contex
 	}
 }
 
+func _Userdata_UpdateNum0_HTTP_Handler(srv UserdataHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateNumRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserdataUpdateNum)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateNum(ctx, req.(*UpdateNumRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateNumReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserdataHTTPClient interface {
 	GetNum(ctx context.Context, req *GetNumRequest, opts ...http.CallOption) (rsp *GetNumReply, err error)
 	GetUserOrders(ctx context.Context, req *GetUserOrdersRequest, opts ...http.CallOption) (rsp *GetUserOrdersReply, err error)
 	GetUsers(ctx context.Context, req *GetUsersRequest, opts ...http.CallOption) (rsp *GetUsersReply, err error)
 	GetUsersIncome(ctx context.Context, req *GetUsersIncomeRequest, opts ...http.CallOption) (rsp *GetUsersIncomeReply, err error)
 	PullUserIncome(ctx context.Context, req *PullUserIncomeRequest, opts ...http.CallOption) (rsp *PullUserIncomeReply, err error)
+	UpdateNum(ctx context.Context, req *UpdateNumRequest, opts ...http.CallOption) (rsp *UpdateNumReply, err error)
+	UpdateUserNum(ctx context.Context, req *UpdateUserNumRequest, opts ...http.CallOption) (rsp *UpdateUserNumReply, err error)
 }
 
 type UserdataHTTPClientImpl struct {
@@ -210,6 +256,32 @@ func (c *UserdataHTTPClientImpl) PullUserIncome(ctx context.Context, in *PullUse
 	pattern := "/api/binance_dai_admin/pull_user_incomes"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserdataPullUserIncome))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *UserdataHTTPClientImpl) UpdateNum(ctx context.Context, in *UpdateNumRequest, opts ...http.CallOption) (*UpdateNumReply, error) {
+	var out UpdateNumReply
+	pattern := "/api/binance_dai_admin/update_num"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserdataUpdateNum))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *UserdataHTTPClientImpl) UpdateUserNum(ctx context.Context, in *UpdateUserNumRequest, opts ...http.CallOption) (*UpdateUserNumReply, error) {
+	var out UpdateUserNumReply
+	pattern := "/api/binance_dai_admin/update_user_num"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserdataUpdateUserNum))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

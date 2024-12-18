@@ -173,6 +173,54 @@ func (u *UserdataRepo) GetUsersByIds(ctx context.Context, userIds []uint64) ([]*
 	return res, nil
 }
 
+// GetUserById .
+func (u *UserdataRepo) GetUserById(ctx context.Context, userId uint64) (*biz.User, error) {
+	var v *User
+	instance := u.data.DB(ctx).Table("new_user")
+	instance.Where("id=?", userId)
+	if err := instance.Order("id desc").First(&v).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, errors.New(500, "FIND_USER_ERROR", err.Error())
+	}
+
+	return &biz.User{
+		ID:                  v.ID,
+		Address:             v.Address,
+		ApiStatus:           v.ApiStatus,
+		ApiKey:              v.ApiKey,
+		ApiSecret:           v.ApiSecret,
+		BindTraderStatus:    v.BindTraderStatus,
+		BindTraderStatusTfi: v.BindTraderStatusTfi,
+		IsDai:               v.Dai,
+		UseNewSystem:        v.UseNewSystem,
+		CreatedAt:           v.CreatedAt,
+		UpdatedAt:           v.UpdatedAt,
+		BinanceId:           v.BinanceId,
+		OkxId:               v.OkxId,
+		NeedInit:            v.NeedInit,
+		Dai:                 v.Dai,
+		Plat:                v.Plat,
+		OkxPass:             v.OkxPass,
+		Num:                 v.Num,
+		Ip:                  v.Ip,
+	}, nil
+}
+
+// UpdateUserNum .
+func (u *UserdataRepo) UpdateUserNum(ctx context.Context, apiKey string, num float64) error {
+	var err error
+	if err = u.data.DB(ctx).Table("new_user").
+		Where("api_key=?", apiKey).
+		Updates(map[string]interface{}{"num": num}).Error; nil != err {
+		return errors.NotFound("user err", "user not found")
+	}
+
+	return nil
+}
+
 type UserIncomeBinance struct {
 	ID        uint64    `gorm:"primarykey;type:int"`
 	UserId    uint64    `gorm:"type:int;not null"`

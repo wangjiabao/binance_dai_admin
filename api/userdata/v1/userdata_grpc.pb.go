@@ -23,7 +23,9 @@ const (
 	Userdata_PullUserIncome_FullMethodName = "/api.userdata.v1.Userdata/PullUserIncome"
 	Userdata_GetUsers_FullMethodName       = "/api.userdata.v1.Userdata/GetUsers"
 	Userdata_GetUsersIncome_FullMethodName = "/api.userdata.v1.Userdata/GetUsersIncome"
+	Userdata_UpdateUserNum_FullMethodName  = "/api.userdata.v1.Userdata/UpdateUserNum"
 	Userdata_GetNum_FullMethodName         = "/api.userdata.v1.Userdata/GetNum"
+	Userdata_UpdateNum_FullMethodName      = "/api.userdata.v1.Userdata/UpdateNum"
 )
 
 // UserdataClient is the client API for Userdata service.
@@ -34,7 +36,9 @@ type UserdataClient interface {
 	PullUserIncome(ctx context.Context, in *PullUserIncomeRequest, opts ...grpc.CallOption) (*PullUserIncomeReply, error)
 	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersReply, error)
 	GetUsersIncome(ctx context.Context, in *GetUsersIncomeRequest, opts ...grpc.CallOption) (*GetUsersIncomeReply, error)
+	UpdateUserNum(ctx context.Context, in *UpdateUserNumRequest, opts ...grpc.CallOption) (*UpdateUserNumReply, error)
 	GetNum(ctx context.Context, in *GetNumRequest, opts ...grpc.CallOption) (*GetNumReply, error)
+	UpdateNum(ctx context.Context, in *UpdateNumRequest, opts ...grpc.CallOption) (*UpdateNumReply, error)
 }
 
 type userdataClient struct {
@@ -81,9 +85,27 @@ func (c *userdataClient) GetUsersIncome(ctx context.Context, in *GetUsersIncomeR
 	return out, nil
 }
 
+func (c *userdataClient) UpdateUserNum(ctx context.Context, in *UpdateUserNumRequest, opts ...grpc.CallOption) (*UpdateUserNumReply, error) {
+	out := new(UpdateUserNumReply)
+	err := c.cc.Invoke(ctx, Userdata_UpdateUserNum_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userdataClient) GetNum(ctx context.Context, in *GetNumRequest, opts ...grpc.CallOption) (*GetNumReply, error) {
 	out := new(GetNumReply)
 	err := c.cc.Invoke(ctx, Userdata_GetNum_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userdataClient) UpdateNum(ctx context.Context, in *UpdateNumRequest, opts ...grpc.CallOption) (*UpdateNumReply, error) {
+	out := new(UpdateNumReply)
+	err := c.cc.Invoke(ctx, Userdata_UpdateNum_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +120,9 @@ type UserdataServer interface {
 	PullUserIncome(context.Context, *PullUserIncomeRequest) (*PullUserIncomeReply, error)
 	GetUsers(context.Context, *GetUsersRequest) (*GetUsersReply, error)
 	GetUsersIncome(context.Context, *GetUsersIncomeRequest) (*GetUsersIncomeReply, error)
+	UpdateUserNum(context.Context, *UpdateUserNumRequest) (*UpdateUserNumReply, error)
 	GetNum(context.Context, *GetNumRequest) (*GetNumReply, error)
+	UpdateNum(context.Context, *UpdateNumRequest) (*UpdateNumReply, error)
 	mustEmbedUnimplementedUserdataServer()
 }
 
@@ -118,8 +142,14 @@ func (UnimplementedUserdataServer) GetUsers(context.Context, *GetUsersRequest) (
 func (UnimplementedUserdataServer) GetUsersIncome(context.Context, *GetUsersIncomeRequest) (*GetUsersIncomeReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsersIncome not implemented")
 }
+func (UnimplementedUserdataServer) UpdateUserNum(context.Context, *UpdateUserNumRequest) (*UpdateUserNumReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserNum not implemented")
+}
 func (UnimplementedUserdataServer) GetNum(context.Context, *GetNumRequest) (*GetNumReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNum not implemented")
+}
+func (UnimplementedUserdataServer) UpdateNum(context.Context, *UpdateNumRequest) (*UpdateNumReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNum not implemented")
 }
 func (UnimplementedUserdataServer) mustEmbedUnimplementedUserdataServer() {}
 
@@ -206,6 +236,24 @@ func _Userdata_GetUsersIncome_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Userdata_UpdateUserNum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserNumRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserdataServer).UpdateUserNum(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Userdata_UpdateUserNum_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserdataServer).UpdateUserNum(ctx, req.(*UpdateUserNumRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Userdata_GetNum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetNumRequest)
 	if err := dec(in); err != nil {
@@ -220,6 +268,24 @@ func _Userdata_GetNum_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserdataServer).GetNum(ctx, req.(*GetNumRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Userdata_UpdateNum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateNumRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserdataServer).UpdateNum(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Userdata_UpdateNum_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserdataServer).UpdateNum(ctx, req.(*UpdateNumRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -248,8 +314,16 @@ var Userdata_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Userdata_GetUsersIncome_Handler,
 		},
 		{
+			MethodName: "UpdateUserNum",
+			Handler:    _Userdata_UpdateUserNum_Handler,
+		},
+		{
 			MethodName: "GetNum",
 			Handler:    _Userdata_GetNum_Handler,
+		},
+		{
+			MethodName: "UpdateNum",
+			Handler:    _Userdata_UpdateNum_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

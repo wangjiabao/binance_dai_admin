@@ -31,6 +31,8 @@ type UserdataRepo interface {
 	GetUsers(ctx context.Context) ([]*User, error)
 	GetUsersStatusOk(ctx context.Context) ([]*User, error)
 	GetUsersByIds(ctx context.Context, userIds []uint64) ([]*User, error)
+	GetUserById(ctx context.Context, userIds uint64) (*User, error)
+	UpdateUserNum(ctx context.Context, apiKey string, num float64) error
 	GetUserIncomesBinance(ctx context.Context, userId uint64) ([]*UserIncomeBinance, error)
 	GetUserIncomesBinanceBySymbolAndTraderId(ctx context.Context, userId uint64, symbol string, traderId string) (*UserIncomeBinance, error)
 	GetUserIncomesBinanceOrderIdDesc(ctx context.Context, userId uint64) (*UserIncomeBinance, error)
@@ -729,4 +731,52 @@ func (uc *UserdataUsecase) GetNum(ctx context.Context, req *pb.GetNumRequest) (*
 	}
 
 	return &pb.GetNumReply{List: res}, nil
+}
+
+func (uc *UserdataUsecase) UpdateUserNum(ctx context.Context, req *pb.UpdateUserNumRequest) (*pb.UpdateUserNumReply, error) {
+	var (
+		user *User
+		err  error
+	)
+
+	user, err = uc.repo.GetUserById(ctx, req.UserId)
+	if nil != err {
+		return nil, err
+	}
+
+	if nil == user {
+		return nil, nil
+	}
+
+	err = setNum(user.Ip, user.ApiKey, req.Num)
+
+	return nil, err
+}
+
+func (uc *UserdataUsecase) UpdateNum(ctx context.Context, req *pb.UpdateNumRequest) (*pb.UpdateNumReply, error) {
+	return nil, uc.repo.UpdateUserNum(ctx, req.ApiKey, req.Num)
+}
+
+// 查询资金流水方法
+func setNum(ip string, apiKey string, num float64) error {
+	// 构造请求
+	req, err := http.NewRequest("GET", "http://"+ip+"/api/binance_dai_admin/update_num?apikey="+apiKey+"&num="+strconv.FormatFloat(num, 'f', -1, 64), nil)
+	if err != nil {
+		return err
+	}
+
+	// 发送请求
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func(Body io.ReadCloser) {
+		err = Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
+	return nil
 }

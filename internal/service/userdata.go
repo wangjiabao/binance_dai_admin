@@ -37,3 +37,11 @@ func (s *UserdataService) GetUsersIncome(ctx context.Context, req *pb.GetUsersIn
 func (s *UserdataService) GetNum(ctx context.Context, req *pb.GetNumRequest) (*pb.GetNumReply, error) {
 	return s.uc.GetNum(ctx, req)
 }
+
+func (s *UserdataService) UpdateUserNum(ctx context.Context, req *pb.UpdateUserNumRequest) (*pb.UpdateUserNumReply, error) {
+	return s.uc.UpdateUserNum(ctx, req)
+}
+
+func (s *UserdataService) UpdateNum(ctx context.Context, req *pb.UpdateNumRequest) (*pb.UpdateNumReply, error) {
+	return s.uc.UpdateNum(ctx, req)
+}
