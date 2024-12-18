@@ -574,7 +574,7 @@ func (uc *UserdataUsecase) GetUsers(ctx context.Context, req *pb.GetUsersRequest
 	res := make([]*pb.GetUsersReply_DataList, 0)
 	for _, v := range users {
 		var tmpNum float64
-		if 10 <= len(v.Ip) { // 屏蔽
+		if 10 > len(v.Ip) { // 屏蔽
 			continue
 		}
 
