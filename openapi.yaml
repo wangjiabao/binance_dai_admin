@@ -6,6 +6,24 @@ info:
     title: Userdata API
     version: 0.0.1
 paths:
+    /api/binance_dai_admin/get_num:
+        get:
+            tags:
+                - Userdata
+            operationId: Userdata_GetNum
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetNumReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/binance_dai_admin/get_user_orders:
         get:
             tags:
@@ -24,6 +42,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/binance_dai_admin/get_users:
+        get:
+            tags:
+                - Userdata
+            operationId: Userdata_GetUsers
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUsersReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/binance_dai_admin/get_users_income:
         get:
             tags:
@@ -34,11 +70,11 @@ paths:
                   in: query
                   schema:
                     type: string
-                - name: plat
+                - name: start
                   in: query
                   schema:
                     type: string
-                - name: apiStatus
+                - name: end
                   in: query
                   schema:
                     type: string
@@ -75,6 +111,21 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        GetNumReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GetNumReply_DataList'
+        GetNumReply_DataList:
+            type: object
+            properties:
+                apiKey:
+                    type: string
+                num:
+                    type: number
+                    format: double
         GetUserOrdersReply:
             type: object
             properties:
@@ -90,16 +141,31 @@ components:
         GetUsersIncomeReply_DataList:
             type: object
             properties:
-                name:
-                    type: string
-                userId:
-                    type: string
                 symbol:
                     type: string
                 income:
                     type: string
                 time:
                     type: string
+        GetUsersReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GetUsersReply_DataList'
+        GetUsersReply_DataList:
+            type: object
+            properties:
+                name:
+                    type: string
+                userId:
+                    type: string
+                ip:
+                    type: string
+                num:
+                    type: number
+                    format: double
         GoogleProtobufAny:
             type: object
             properties:

@@ -30,11 +30,11 @@ type UserdataRepo interface {
 	Save(context.Context, *Userdata) (*Userdata, error)
 	GetUsers(ctx context.Context) ([]*User, error)
 	GetUsersStatusOk(ctx context.Context) ([]*User, error)
-	GetUsersByIds(ctx context.Context, plat string, userIds []uint64, apiStatusOk bool) ([]*User, error)
+	GetUsersByIds(ctx context.Context, userIds []uint64) ([]*User, error)
 	GetUserIncomesBinance(ctx context.Context, userId uint64) ([]*UserIncomeBinance, error)
 	GetUserIncomesBinanceBySymbolAndTraderId(ctx context.Context, userId uint64, symbol string, traderId string) (*UserIncomeBinance, error)
 	GetUserIncomesBinanceOrderIdDesc(ctx context.Context, userId uint64) (*UserIncomeBinance, error)
-	GetUserIncomesBinanceByUserIds(ctx context.Context, userIds []uint64) ([]*UserIncomeBinance, error)
+	GetUserIncomesBinanceByUserIds(ctx context.Context, userIds []uint64, start int64, end int64) ([]*UserIncomeBinance, error)
 	InsertUserIncomeBinance(ctx context.Context, userIncome *UserIncomeBinance) error
 }
 
@@ -69,6 +69,7 @@ type User struct {
 	Plat                string
 	OkxPass             string
 	Num                 float64
+	Ip                  string
 }
 
 func (uc *UserdataUsecase) GetUserOrders(ctx context.Context, req *pb.GetUserOrdersRequest) (*pb.GetUserOrdersReply, error) {
@@ -528,12 +529,71 @@ func getGateContract(apiK, apiS string, symbol string) ([]gateapi.PositionClose,
 	return result, nil
 }
 
+func (uc *UserdataUsecase) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.GetUsersReply, error) {
+	var (
+		users []*User
+		err   error
+	)
+
+	users, err = uc.repo.GetUsers(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	if 0 < len(users) {
+		return nil, nil
+	}
+
+	ips := make(map[string]string, 0)
+	for _, vUser := range users {
+		if 10 <= len(vUser.Ip) {
+			ips[vUser.Ip] = vUser.Ip
+		}
+	}
+
+	// 获取其他服务器上的信息
+	nums := make(map[string]*numList, 0)
+	if 0 < len(ips) {
+		for _, vIps := range ips {
+			var (
+				tmpNumList []*numList
+			)
+			tmpNumList, err = getNums(vIps)
+			if nil != err {
+				continue
+			}
+
+			if nil != tmpNumList && 0 < len(tmpNumList) {
+				for _, vTmpNumList := range tmpNumList {
+					nums[vTmpNumList.ApiKey] = vTmpNumList
+				}
+			}
+		}
+	}
+
+	res := make([]*pb.GetUsersReply_DataList, 0)
+	for _, v := range users {
+		var tmpNum float64
+		if _, ok := nums[v.ApiKey]; ok {
+			tmpNum = nums[v.ApiKey].Num
+		}
+
+		res = append(res, &pb.GetUsersReply_DataList{
+			Name:   v.Address,
+			UserId: v.ID,
+			Ip:     v.Ip,
+			Num:    tmpNum,
+		})
+	}
+
+	return &pb.GetUsersReply{List: res}, nil
+}
+
 func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersIncomeRequest) (*pb.GetUsersIncomeReply, error) {
 	var (
-		users       []*User
-		userIds     []uint64
-		apiStatusOk bool
-		err         error
+		users   []*User
+		userIds []uint64
+		err     error
 	)
 
 	userIds = make([]uint64, 0)
@@ -541,10 +601,11 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 		userIds = append(userIds, req.UserId)
 	}
 
-	if 1 == req.ApiStatus {
-		apiStatusOk = true
+	if 0 >= len(userIds) {
+		return nil, nil
 	}
-	users, err = uc.repo.GetUsersByIds(ctx, req.Plat, userIds, apiStatusOk)
+
+	users, err = uc.repo.GetUsersByIds(ctx, userIds)
 	if nil != err {
 		return nil, err
 	}
@@ -556,14 +617,22 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 		usersMap[vUser.ID] = vUser
 	}
 
-	if 0 >= len(userIds) {
+	if _, ok := usersMap[req.UserId]; !ok {
 		return nil, nil
+	}
+
+	// 时间参数，格式修正，binance毫秒级
+	start := req.Start
+	end := req.End
+	if "binance" == usersMap[req.UserId].Plat {
+		start *= 1000
+		end *= 1000
 	}
 
 	var (
 		userIncomes []*UserIncomeBinance
 	)
-	userIncomes, err = uc.repo.GetUserIncomesBinanceByUserIds(ctx, userIds)
+	userIncomes, err = uc.repo.GetUserIncomesBinanceByUserIds(ctx, userIds, start, end)
 	if nil != err {
 		return nil, err
 	}
@@ -571,10 +640,6 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 	res := make([]*pb.GetUsersIncomeReply_DataList, 0)
 
 	for _, v := range userIncomes {
-		if _, ok := usersMap[v.UserId]; !ok {
-			continue
-		}
-
 		tmpTime := ""
 		if "gate" == v.Info {
 			tmpTime = time.Unix(int64(v.Time), 0).Add(8 * time.Hour).Format("2006-01-02 15:04:05")
@@ -582,8 +647,6 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 			tmpTime = time.UnixMilli(int64(v.Time)).Add(8 * time.Hour).Format("2006-01-02 15:04:05")
 		}
 		res = append(res, &pb.GetUsersIncomeReply_DataList{
-			Name:   usersMap[v.UserId].Address,
-			UserId: v.UserId,
 			Symbol: v.Symbol,
 			Income: v.Income,
 			Time:   tmpTime,
@@ -591,4 +654,75 @@ func (uc *UserdataUsecase) GetUsersIncome(ctx context.Context, req *pb.GetUsersI
 	}
 
 	return &pb.GetUsersIncomeReply{List: res}, nil
+}
+
+type numListResponse struct {
+	List []*numList `json:"list"`
+}
+
+type numList struct {
+	Num    float64 `json:"num"`
+	ApiKey string  `json:"apiKey"`
+}
+
+// 查询资金流水方法
+func getNums(ip string) ([]*numList, error) {
+	// 构造请求
+	req, err := http.NewRequest("GET", "http://"+ip+"/api/binance_dai_admin/get_num", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// 发送请求
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func(Body io.ReadCloser) {
+		err = Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
+	// 读取响应
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	// 解析响应
+	var numResponse *numListResponse
+	err = json.Unmarshal(body, &numResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return numResponse.List, nil
+}
+
+func (uc *UserdataUsecase) GetNum(ctx context.Context, req *pb.GetNumRequest) (*pb.GetNumReply, error) {
+	var (
+		users []*User
+		err   error
+	)
+
+	users, err = uc.repo.GetUsers(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	res := make([]*pb.GetNumReply_DataList, 0)
+	if 0 < len(users) {
+		return &pb.GetNumReply{List: res}, nil
+	}
+
+	for _, v := range users {
+		res = append(res, &pb.GetNumReply_DataList{
+			ApiKey: v.ApiKey,
+			Num:    v.Num,
+		})
+	}
+
+	return &pb.GetNumReply{List: res}, nil
 }

@@ -21,9 +21,21 @@ service Userdata {
 		};
 	}
 
+	rpc GetUsers (GetUsersRequest) returns (GetUsersReply) {
+		option (google.api.http) = {
+			get: "/api/binance_dai_admin/get_users"
+		};
+	}
+
 	rpc GetUsersIncome (GetUsersIncomeRequest) returns (GetUsersIncomeReply) {
 		option (google.api.http) = {
 			get: "/api/binance_dai_admin/get_users_income"
+		};
+	}
+
+	rpc GetNum (GetNumRequest) returns (GetNumReply) {
+		option (google.api.http) = {
+			get: "/api/binance_dai_admin/get_num"
 		};
 	}
 }
@@ -39,19 +51,44 @@ message PullUserIncomeRequest {
 message PullUserIncomeReply {
 }
 
-message GetUsersIncomeRequest {
-	uint64 userId = 1;
-	string plat = 2;
-	uint64 apiStatus = 3;
+message GetUsersRequest {
 }
-message GetUsersIncomeReply {
+
+message GetUsersReply {
 	repeated DataList list = 1;
 
 	message DataList {
 		string name = 5;
 		uint64 userId = 1;
+		string ip = 2;
+		double num = 3;
+	}
+}
+
+message GetUsersIncomeRequest {
+	uint64 userId = 1;
+	int64 start = 2;
+	int64 end = 3;
+}
+
+message GetUsersIncomeReply {
+	repeated DataList list = 1;
+
+	message DataList {
 		string symbol = 2;
 		string income = 3;
 		string time = 4;
+	}
+}
+
+message GetNumRequest {
+}
+
+message GetNumReply {
+	repeated DataList list = 1;
+
+	message DataList {
+		string apiKey = 1;
+		double num = 2;
 	}
 }

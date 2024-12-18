@@ -48,6 +48,7 @@ type User struct {
 	Plat                string    `gorm:"type:varchar(200);not null"`
 	OkxPass             string    `gorm:"type:varchar(200);not null"`
 	Num                 float64   `gorm:"type:decimal(65,20);not null"`
+	Ip                  string    `gorm:"type:varchar(45);not null"`
 }
 
 // GetUsers .
@@ -127,20 +128,12 @@ func (u *UserdataRepo) GetUsersStatusOk(ctx context.Context) ([]*biz.User, error
 }
 
 // GetUsersByIds .
-func (u *UserdataRepo) GetUsersByIds(ctx context.Context, plat string, userIds []uint64, apiStatusOk bool) ([]*biz.User, error) {
+func (u *UserdataRepo) GetUsersByIds(ctx context.Context, userIds []uint64) ([]*biz.User, error) {
 	var users []*User
 	instance := u.data.DB(ctx).Table("new_user")
 
 	if 0 < len(userIds) {
 		instance.Where("id in (?)", userIds)
-	}
-
-	if 0 < len(plat) {
-		instance.Where("plat=?", plat)
-	}
-
-	if apiStatusOk {
-		instance.Where("api_status=?", 1)
 	}
 
 	if err := instance.Order("id desc").Find(&users).Error; err != nil {
@@ -172,6 +165,7 @@ func (u *UserdataRepo) GetUsersByIds(ctx context.Context, plat string, userIds [
 			Plat:                v.Plat,
 			OkxPass:             v.OkxPass,
 			Num:                 v.Num,
+			Ip:                  v.Ip,
 		})
 	}
 
@@ -292,9 +286,11 @@ func (u *UserdataRepo) InsertUserIncomeBinance(ctx context.Context, userIncome *
 }
 
 // GetUserIncomesBinanceByUserIds .
-func (u *UserdataRepo) GetUserIncomesBinanceByUserIds(ctx context.Context, userIds []uint64) ([]*biz.UserIncomeBinance, error) {
+func (u *UserdataRepo) GetUserIncomesBinanceByUserIds(ctx context.Context, userIds []uint64, start int64, end int64) ([]*biz.UserIncomeBinance, error) {
 	var usersIncomes []*UserIncomeBinance
-	if err := u.data.DB(ctx).Table("user_income_binance").Where("user_id in (?)", userIds).Find(&usersIncomes).Error; err != nil {
+	if err := u.data.DB(ctx).Table("user_income_binance").Where("user_id in (?)", userIds).
+		Where("time>=? and time<=?", start, end).
+		Find(&usersIncomes).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

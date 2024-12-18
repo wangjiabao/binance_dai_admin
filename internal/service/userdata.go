@@ -26,6 +26,14 @@ func (s *UserdataService) PullUserIncome(ctx context.Context, req *pb.PullUserIn
 	return s.uc.PullUserIncome(ctx, req)
 }
 
+func (s *UserdataService) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.GetUsersReply, error) {
+	return s.uc.GetUsers(ctx, req)
+}
+
 func (s *UserdataService) GetUsersIncome(ctx context.Context, req *pb.GetUsersIncomeRequest) (*pb.GetUsersIncomeReply, error) {
 	return s.uc.GetUsersIncome(ctx, req)
+}
+
+func (s *UserdataService) GetNum(ctx context.Context, req *pb.GetNumRequest) (*pb.GetNumReply, error) {
+	return s.uc.GetNum(ctx, req)
 }

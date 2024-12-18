@@ -21,7 +21,9 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Userdata_GetUserOrders_FullMethodName  = "/api.userdata.v1.Userdata/GetUserOrders"
 	Userdata_PullUserIncome_FullMethodName = "/api.userdata.v1.Userdata/PullUserIncome"
+	Userdata_GetUsers_FullMethodName       = "/api.userdata.v1.Userdata/GetUsers"
 	Userdata_GetUsersIncome_FullMethodName = "/api.userdata.v1.Userdata/GetUsersIncome"
+	Userdata_GetNum_FullMethodName         = "/api.userdata.v1.Userdata/GetNum"
 )
 
 // UserdataClient is the client API for Userdata service.
@@ -30,7 +32,9 @@ const (
 type UserdataClient interface {
 	GetUserOrders(ctx context.Context, in *GetUserOrdersRequest, opts ...grpc.CallOption) (*GetUserOrdersReply, error)
 	PullUserIncome(ctx context.Context, in *PullUserIncomeRequest, opts ...grpc.CallOption) (*PullUserIncomeReply, error)
+	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersReply, error)
 	GetUsersIncome(ctx context.Context, in *GetUsersIncomeRequest, opts ...grpc.CallOption) (*GetUsersIncomeReply, error)
+	GetNum(ctx context.Context, in *GetNumRequest, opts ...grpc.CallOption) (*GetNumReply, error)
 }
 
 type userdataClient struct {
@@ -59,9 +63,27 @@ func (c *userdataClient) PullUserIncome(ctx context.Context, in *PullUserIncomeR
 	return out, nil
 }
 
+func (c *userdataClient) GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersReply, error) {
+	out := new(GetUsersReply)
+	err := c.cc.Invoke(ctx, Userdata_GetUsers_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userdataClient) GetUsersIncome(ctx context.Context, in *GetUsersIncomeRequest, opts ...grpc.CallOption) (*GetUsersIncomeReply, error) {
 	out := new(GetUsersIncomeReply)
 	err := c.cc.Invoke(ctx, Userdata_GetUsersIncome_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userdataClient) GetNum(ctx context.Context, in *GetNumRequest, opts ...grpc.CallOption) (*GetNumReply, error) {
+	out := new(GetNumReply)
+	err := c.cc.Invoke(ctx, Userdata_GetNum_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +96,9 @@ func (c *userdataClient) GetUsersIncome(ctx context.Context, in *GetUsersIncomeR
 type UserdataServer interface {
 	GetUserOrders(context.Context, *GetUserOrdersRequest) (*GetUserOrdersReply, error)
 	PullUserIncome(context.Context, *PullUserIncomeRequest) (*PullUserIncomeReply, error)
+	GetUsers(context.Context, *GetUsersRequest) (*GetUsersReply, error)
 	GetUsersIncome(context.Context, *GetUsersIncomeRequest) (*GetUsersIncomeReply, error)
+	GetNum(context.Context, *GetNumRequest) (*GetNumReply, error)
 	mustEmbedUnimplementedUserdataServer()
 }
 
@@ -88,8 +112,14 @@ func (UnimplementedUserdataServer) GetUserOrders(context.Context, *GetUserOrders
 func (UnimplementedUserdataServer) PullUserIncome(context.Context, *PullUserIncomeRequest) (*PullUserIncomeReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PullUserIncome not implemented")
 }
+func (UnimplementedUserdataServer) GetUsers(context.Context, *GetUsersRequest) (*GetUsersReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
+}
 func (UnimplementedUserdataServer) GetUsersIncome(context.Context, *GetUsersIncomeRequest) (*GetUsersIncomeReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsersIncome not implemented")
+}
+func (UnimplementedUserdataServer) GetNum(context.Context, *GetNumRequest) (*GetNumReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNum not implemented")
 }
 func (UnimplementedUserdataServer) mustEmbedUnimplementedUserdataServer() {}
 
@@ -140,6 +170,24 @@ func _Userdata_PullUserIncome_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Userdata_GetUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUsersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserdataServer).GetUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Userdata_GetUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserdataServer).GetUsers(ctx, req.(*GetUsersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Userdata_GetUsersIncome_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUsersIncomeRequest)
 	if err := dec(in); err != nil {
@@ -154,6 +202,24 @@ func _Userdata_GetUsersIncome_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserdataServer).GetUsersIncome(ctx, req.(*GetUsersIncomeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Userdata_GetNum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNumRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserdataServer).GetNum(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Userdata_GetNum_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserdataServer).GetNum(ctx, req.(*GetNumRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -174,8 +240,16 @@ var Userdata_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Userdata_PullUserIncome_Handler,
 		},
 		{
+			MethodName: "GetUsers",
+			Handler:    _Userdata_GetUsers_Handler,
+		},
+		{
 			MethodName: "GetUsersIncome",
 			Handler:    _Userdata_GetUsersIncome_Handler,
+		},
+		{
+			MethodName: "GetNum",
+			Handler:    _Userdata_GetNum_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
