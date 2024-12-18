@@ -83,6 +83,7 @@ func (u *UserdataRepo) GetUsers(ctx context.Context) ([]*biz.User, error) {
 			Plat:                v.Plat,
 			OkxPass:             v.OkxPass,
 			Num:                 v.Num,
+			Ip:                  v.Ip,
 		})
 	}
 
