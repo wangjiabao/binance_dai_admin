@@ -713,7 +713,7 @@ func (uc *UserdataUsecase) GetNum(ctx context.Context, req *pb.GetNumRequest) (*
 	}
 
 	res := make([]*pb.GetNumReply_DataList, 0)
-	if 0 < len(users) {
+	if 0 >= len(users) {
 		return &pb.GetNumReply{List: res}, nil
 	}
 
