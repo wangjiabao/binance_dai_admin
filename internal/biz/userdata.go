@@ -760,7 +760,7 @@ func (uc *UserdataUsecase) UpdateNum(ctx context.Context, req *pb.UpdateNumReque
 // 查询资金流水方法
 func setNum(ip string, apiKey string, num float64) error {
 	// 构造请求
-	req, err := http.NewRequest("GET", "http://"+ip+"/api/binance_dai_admin/update_num?apikey="+apiKey+"&num="+strconv.FormatFloat(num, 'f', -1, 64), nil)
+	req, err := http.NewRequest("GET", "http://"+ip+"/api/binance_dai_admin/update_num?apiKey="+apiKey+"&num="+strconv.FormatFloat(num, 'f', -1, 64), nil)
 	if err != nil {
 		return err
 	}
